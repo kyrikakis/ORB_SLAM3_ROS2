@@ -24,7 +24,7 @@ Camera.fps: 30.0
 Camera.RGB: 1
 
 # Camera resolution
-Camera.width: 640
+Camera.width: 768
 Camera.height: 480
 
 #--------------------------------------------------------------------------------------------

@@ -17,18 +17,19 @@
 using ImageMsg = sensor_msgs::msg::Image;
 using ImuMsg = sensor_msgs::msg::Imu;
 
-class MonoInetrialNode : public rclcpp::Node
+class MonoStreamNode : public rclcpp::Node
 {
 public:
-    MonoInetrialNode(ORB_SLAM3::System* pSLAM);
+    MonoStreamNode(ORB_SLAM3::System* pSLAM);
 
-    ~MonoInetrialNode();
+    ~MonoStreamNode();
 
 private:
     void GrabImu(const ImuMsg::SharedPtr msg);
     cv::Mat GetImage(const ImageMsg::SharedPtr msg);
     void SyncWithImu();
     void GrabImage(const sensor_msgs::msg::Image::SharedPtr msg);
+    void startStream();
 
     ORB_SLAM3::System* m_SLAM;
 
@@ -44,6 +45,8 @@ private:
     // Image
     queue<ImageMsg::SharedPtr> imgLeftBuf_;
     std::mutex bufMutexLeft_;
+
+    bool stream = true;
 };
 
 #endif

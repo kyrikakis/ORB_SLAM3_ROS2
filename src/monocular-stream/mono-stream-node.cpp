@@ -1,10 +1,15 @@
-#include "mono-inetrial-node.hpp"
+#include "mono-stream-node.hpp"
 
 #include<opencv2/core/core.hpp>
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 using std::placeholders::_1;
 
-MonoInetrialNode::MonoInetrialNode(ORB_SLAM3::System* pSLAM)
+MonoStreamNode::MonoStreamNode(ORB_SLAM3::System* pSLAM)
 :   Node("ORB_SLAM3_ROS2")
 {
     size_t depth = 10;
@@ -32,32 +37,83 @@ MonoInetrialNode::MonoInetrialNode(ORB_SLAM3::System* pSLAM)
 
     m_SLAM = pSLAM;
     // std::cout << "slam changed" << std::endl;
-    m_image_subscriber = this->create_subscription<ImageMsg>(
-        "image",
-        qos,
-        std::bind(&MonoInetrialNode::GrabImage, this, std::placeholders::_1));
-    subImu_ = this->create_subscription<ImuMsg>("imu", 1000, std::bind(&MonoInetrialNode::GrabImu, this, _1));
-    syncThread_ = new std::thread(&MonoInetrialNode::SyncWithImu, this);
+    // m_image_subscriber = this->create_subscription<ImageMsg>(
+    //     "image",
+    //     qos,
+    //     std::bind(&MonoStreamNode::GrabImage, this, std::placeholders::_1));
+    // subImu_ = this->create_subscription<ImuMsg>("imu", 1000, std::bind(&MonoStreamNode::GrabImu, this, _1));
+    // syncThread_ = new std::thread(&MonoStreamNode::SyncWithImu, this);
     std::cout << "slam changed" << std::endl;
+    MonoStreamNode::startStream();
 }
 
-MonoInetrialNode::~MonoInetrialNode()
+MonoStreamNode::~MonoStreamNode()
 {
+    MonoStreamNode::stream = false;
     // Stop all threads
-    m_SLAM->Shutdown();
+    // m_SLAM->Shutdown();
 
     // Save camera trajectory
-    m_SLAM->SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    // m_SLAM->SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
 }
 
-void MonoInetrialNode::GrabImu(const ImuMsg::SharedPtr msg)
+void MonoStreamNode::startStream() 
+{
+    cv::VideoCapture cap;
+    cap.set(cv::CAP_PROP_BUFFERSIZE, 1);
+
+    cap.open("tcp://192.168.1.210:8888");
+
+    std::cout << "buffer size: " << cap.get(cv::CAP_PROP_BUFFERSIZE) << std::endl;
+
+    // Check if the video capture object is successfully opened
+    if (!cap.isOpened()) {
+        std::cerr << "Error opening video stream from TCP source" << std::endl;
+        return;
+    } else {
+        std::cout << "video capture suceeded!" << std::endl;
+    }
+
+    cv::Mat frame;
+    cap >> frame;
+    std::cout << "frame received size: " << frame.size() << std::endl;
+
+    //cv::namedWindow("Video Stream", cv::WINDOW_NORMAL);
+
+    try {
+        while (MonoStreamNode::stream) {
+            // Read a frame from the video source
+            cap >> frame;
+
+            // Check if the frame is empty (end of video stream)
+            if (frame.empty()) {
+                std::cout << "End of video stream" << std::endl;
+                break;
+            } else {
+                std::cout << "frame rate: " << cap.get(cv::CAP_PROP_FPS) << std::endl;
+            }
+
+            // Display the frame (you can replace this with your processing logic)
+            //cv::imshow("Video Stream", frame);
+            // Check for errors
+            m_SLAM->TrackMonocular(frame, Utility::StampToSec(this->get_clock()->now())); 
+        }
+        // Clean up
+        cv::destroyAllWindows();
+    } catch (cv::Exception& e) {
+        std::cerr << "OpenCV exception: " << e.what() << std::endl;
+        return;
+    }
+}
+
+void MonoStreamNode::GrabImu(const ImuMsg::SharedPtr msg)
 {
     bufMutex_.lock();
     imuBuf_.push(msg);
     bufMutex_.unlock();
 }
 
-void MonoInetrialNode::GrabImage(const ImageMsg::SharedPtr msg)
+void MonoStreamNode::GrabImage(const ImageMsg::SharedPtr msg)
 {
     bufMutexLeft_.lock();
 
@@ -69,7 +125,7 @@ void MonoInetrialNode::GrabImage(const ImageMsg::SharedPtr msg)
 
 }
 
-cv::Mat MonoInetrialNode::GetImage(const ImageMsg::SharedPtr msg)
+cv::Mat MonoStreamNode::GetImage(const ImageMsg::SharedPtr msg)
 {
     // Copy the ros image message to cv::Mat.
     cv_bridge::CvImageConstPtr cv_ptr;
@@ -94,7 +150,7 @@ cv::Mat MonoInetrialNode::GetImage(const ImageMsg::SharedPtr msg)
     }
 }
 
-void MonoInetrialNode::SyncWithImu()
+void MonoStreamNode::SyncWithImu()
 {
     const double maxTimeDiff = 0.01;
 
