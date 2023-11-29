@@ -18,6 +18,7 @@ MonocularSlamNode::MonocularSlamNode(ORB_SLAM3::System* pSLAM)
 
 MonocularSlamNode::~MonocularSlamNode()
 {
+    std::cout << "Distructor called" << std::endl;
     // Stop all threads
     m_SLAM->Shutdown();
 

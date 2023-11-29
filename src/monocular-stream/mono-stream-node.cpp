@@ -49,6 +49,7 @@ MonoStreamNode::MonoStreamNode(ORB_SLAM3::System* pSLAM)
 
 MonoStreamNode::~MonoStreamNode()
 {
+    std::cout << "Distructor called" << std::endl;
     MonoStreamNode::stream = false;
     // Stop all threads
     // m_SLAM->Shutdown();

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(orbslam3)
+add_definitions(-w)
 
 # You should set the PYTHONPATH to your own python site-packages path
 set(ENV{PYTHONPATH} "/opt/ros/humble/lib/python3.10/site-packages")
@@ -53,6 +54,12 @@ add_executable(mono-stream
 )
 ament_target_dependencies(mono-stream rclcpp sensor_msgs cv_bridge ORB_SLAM3 Pangolin OpenCV)
 
+add_executable(image-stream
+  src/image-stream/image-stream.cpp
+  src/image-stream/image-stream-node.cpp
+)
+ament_target_dependencies(image-stream rclcpp sensor_msgs cv_bridge OpenCV)
+
 add_executable(rgbd
   src/rgbd/rgbd.cpp
   src/rgbd/rgbd-slam-node.cpp
@@ -71,7 +78,7 @@ add_executable(stereo-inertial
 )
 ament_target_dependencies(stereo-inertial rclcpp sensor_msgs cv_bridge ORB_SLAM3 Pangolin OpenCV)
 
-install(TARGETS mono mono-inetrial mono-stream rgbd stereo stereo-inertial DESTINATION lib/${PROJECT_NAME})
+install(TARGETS mono mono-inetrial mono-stream image-stream rgbd stereo stereo-inertial DESTINATION lib/${PROJECT_NAME})
 
 # Install launch files.
 #install(DIRECTORY launch config vocabulary
