@@ -9,12 +9,6 @@
 
 int main(int argc, char **argv)
 {
-    if(argc < 3)
-    {
-        std::cerr << "\nUsage: ros2 run orbslam mono path_to_vocabulary path_to_settings" << std::endl;
-        return 1;
-    }
-
     rclcpp::init(argc, argv);
 
     auto node = std::make_shared<ImageStreamNode>();

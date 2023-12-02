@@ -7,9 +7,9 @@
 using std::placeholders::_1;
 
 ImageStreamNode::ImageStreamNode()
-:   Node("ImageStreamNode")
+:   Node("camera"), cim(this)
 {
-    size_t depth = 10;
+    size_t depth = 5;
     rmw_qos_reliability_policy_t reliability_policy = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
     rmw_qos_history_policy_t history_policy = RMW_QOS_POLICY_HISTORY_KEEP_LAST;
 
@@ -32,34 +32,17 @@ ImageStreamNode::ImageStreamNode()
     auto qos = rclcpp::QoS(
         rclcpp::QoSInitialization::from_rmw(qos_profile));
     
-    pub_image = this->create_publisher<sensor_msgs::msg::Image>("/image", qos);
+    pub_image = this->create_publisher<sensor_msgs::msg::Image>("~/image_raw", qos);
+    pub_ci = this->create_publisher<sensor_msgs::msg::CameraInfo>("~/camera_info", qos);
+
+    if (!cim.setCameraName("pi_module3_wide"))
+        throw std::runtime_error("camera name must only contain alphanumeric characters");
     ImageStreamNode::StreamImage();
 }
 
 void ImageStreamNode::StreamImage() 
 {
-    // cv::VideoCapture cap;
-    // cap.set(cv::CAP_PROP_BUFFERSIZE, 1);
-
-    // cap.open("tcp://192.168.1.210:8888");
-
-    // std::cout << "buffer size: " << cap.get(cv::CAP_PROP_BUFFERSIZE) << std::endl;
-
-    // Check if the video capture object is successfully opened
-    // if (!cap.isOpened()) {
-    //     std::cerr << "Error opening video stream from TCP source" << std::endl;
-    //     return;
-    // } else {
-    //     std::cout << "video capture suceeded!" << std::endl;
-    // }
-
-    // cv::Mat frame;
-    // cap >> frame;
-    // std::cout << "frame received size: " << frame.size() << std::endl;
-
-    //cv::namedWindow("Video Stream", cv::WINDOW_NORMAL);
-
-    std::string serverAddress = "192.168.1.210";
+    std::string serverAddress = "192.168.1.17";
     unsigned short serverPort = 8888;
 
     // Setup boost::asio
@@ -70,17 +53,6 @@ void ImageStreamNode::StreamImage()
     try {
         socket.connect(endpoint);
         while (true) {
-            // Read a frame from the video source
-            // cap >> frame;
-
-            // // Check if the frame is empty (end of video stream)
-            // if (frame.empty()) {
-            //     std::cout << "End of video stream" << std::endl;
-            //     break;
-            // } else {
-            //     std::cout << "frame rate: " << cap.get(cv::CAP_PROP_FPS) << std::endl;
-            // }
-            
             // // send image data
             std_msgs::msg::Header header;
             header.frame_id = "camera";
@@ -106,6 +78,10 @@ void ImageStreamNode::StreamImage()
             img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, frame);
             ImageMsg::SharedPtr msg_img = img_bridge.toImageMsg();
             pub_image->publish(*msg_img); 
+
+            sensor_msgs::msg::CameraInfo ci = cim.getCameraInfo();
+            ci.header = header;
+            pub_ci->publish(ci);
         }
         // Clean up
         cv::destroyAllWindows();

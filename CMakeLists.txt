@@ -19,6 +19,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(Sophus REQUIRED)
@@ -58,7 +59,7 @@ add_executable(image-stream
   src/image-stream/image-stream.cpp
   src/image-stream/image-stream-node.cpp
 )
-ament_target_dependencies(image-stream rclcpp sensor_msgs cv_bridge OpenCV)
+ament_target_dependencies(image-stream rclcpp sensor_msgs camera_info_manager cv_bridge OpenCV)
 
 add_executable(rgbd
   src/rgbd/rgbd.cpp

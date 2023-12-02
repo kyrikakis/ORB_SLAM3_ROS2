@@ -4,6 +4,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include <camera_info_manager/camera_info_manager.hpp>
+#include <sensor_msgs/msg/detail/camera_info__struct.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 
@@ -22,7 +24,9 @@ private:
     void StreamImage();
 
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image;
-    //rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_ci;
+    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_ci;
+
+    camera_info_manager::CameraInfoManager cim;
 };
 
 #endif
