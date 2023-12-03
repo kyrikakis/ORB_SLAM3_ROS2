@@ -20,6 +20,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(camera_info_manager REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(Sophus REQUIRED)
@@ -42,6 +46,12 @@ add_executable(mono
   src/monocular/monocular-slam-node.cpp
 )
 ament_target_dependencies(mono rclcpp sensor_msgs cv_bridge ORB_SLAM3 Pangolin OpenCV)
+
+add_executable(mono-pcloud
+  src/mono-pcloud/mono-pcloud.cpp
+  src/mono-pcloud/mono-pcloud-node.cpp
+)
+ament_target_dependencies(mono-pcloud rclcpp sensor_msgs geometry_msgs tf2_ros tf2 tf2_geometry_msgs image_transport cv_bridge ORB_SLAM3 Pangolin OpenCV)
 
 add_executable(mono-inetrial
   src/monocular-inetrial/mono-inetrial.cpp
@@ -79,11 +89,7 @@ add_executable(stereo-inertial
 )
 ament_target_dependencies(stereo-inertial rclcpp sensor_msgs cv_bridge ORB_SLAM3 Pangolin OpenCV)
 
-install(TARGETS mono mono-inetrial mono-stream image-stream rgbd stereo stereo-inertial DESTINATION lib/${PROJECT_NAME})
-
-# Install launch files.
-#install(DIRECTORY launch config vocabulary
-#  DESTINATION share/${PROJECT_NAME}/)
+install(TARGETS mono mono-pcloud mono-inetrial mono-stream image-stream rgbd stereo stereo-inertial DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
 
