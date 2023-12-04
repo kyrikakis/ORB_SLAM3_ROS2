@@ -43,7 +43,7 @@ MonoPcloudNode::MonoPcloudNode(ORB_SLAM3::System *pSLAM)
     tf_orb_to_ros.setValue(0, 0, 1, -1, 0, 0, 0, -1, 0);
 
     pose_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("~/camera_pose", qos);
-    map_points_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("~/map_points", qos);
+    map_points_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_in", qos);
 
     std::shared_ptr<rclcpp::Node> image_transport_node = rclcpp::Node::make_shared("image_publisher");
     image_transport::ImageTransport image_transport(image_transport_node);
