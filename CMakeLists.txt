@@ -3,7 +3,7 @@ project(orbslam3)
 add_definitions(-w)
 
 # You should set the PYTHONPATH to your own python site-packages path
-set(ENV{PYTHONPATH} "/opt/ros/humble/lib/python3.10/site-packages")
+set(ENV{PYTHONPATH} "/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 

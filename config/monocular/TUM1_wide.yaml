@@ -1,21 +1,26 @@
 %YAML:1.0
 
+# If the LoadFile doesn't exist, the system give a message and create a new Atlas from scratch
+System.LoadAtlasFromFile: "Session_TUM1_wide_mono"
+# The store file is created from the current session, if a file with the same name exists it is deleted
+System.SaveAtlasToFile: "Session_TUM1_wide_mono"
+
 #--------------------------------------------------------------------------------------------
 # Camera Parameters. Adjust them!
 #--------------------------------------------------------------------------------------------
 Camera.type: "PinHole"
 
 # Camera calibration and distortion parameters (OpenCV) 
-Camera.fx: 346.45671
-Camera.fy: 345.27528
-Camera.cx: 401.56605
-Camera.cy: 186.96945
+Camera.fx: 391.174663
+Camera.fy: 391.141544
+Camera.cx: 446.201523
+Camera.cy: 211.419902
 
-Camera.k1: 0.000958
-Camera.k2: -0.021491
-Camera.p1: 0.000316
-Camera.p2: 0.003334
-Camera.k3: 0.003334
+Camera.k1: -0.016098
+Camera.k2: 0.003054
+Camera.p1: 0.000348
+Camera.p2: -0.002329
+Camera.k3: 0.000000
 
 # Camera frames per second 
 Camera.fps: 25.0
@@ -24,8 +29,8 @@ Camera.fps: 25.0
 Camera.RGB: 1
 
 # Camera resolution
-Camera.width: 800
-Camera.height: 368
+Camera.width: 900
+Camera.height: 316
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters

@@ -53,7 +53,7 @@ MonoPcloudNode::MonoPcloudNode(ORB_SLAM3::System *pSLAM)
 
 MonoPcloudNode::~MonoPcloudNode()
 {
-    std::cout << "Distructor called" << std::endl;
+    RCLCPP_INFO(this->get_logger(), "Destructor called");
     // Stop all threads
     m_SLAM->Shutdown();
 
@@ -241,9 +241,8 @@ void MonoPcloudNode::GrabImage(const ImageMsg::SharedPtr msg)
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
         return;
     }
-    rclcpp::Time current_frame_time = m_cvImPtr->header.stamp;
+    rclcpp::Time current_frame_time = msg->header.stamp;
 
-    std::cout << "one frame has been sent" << std::endl;
     cv::Mat Tcw = ORB_SLAM3::Converter::toCvMat(m_SLAM->TrackMonocular(m_cvImPtr->image, Utility::StampToSec(msg->header.stamp)).matrix());
 
     publish_ros_pose_tf(Tcw, current_frame_time);

@@ -15,7 +15,7 @@
   <depend>cv_bridge</depend>
   <depend>message_filters</depend>
   <depend>Pangolin</depend>
-
+  
   <export>
     <build_type>ament_cmake</build_type>
   </export>

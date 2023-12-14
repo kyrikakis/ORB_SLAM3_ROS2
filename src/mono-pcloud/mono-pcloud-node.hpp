@@ -22,6 +22,8 @@
 
 #include "utility.hpp"
 
+#include <ctime>
+
 class MonoPcloudNode : public rclcpp::Node
 {
 public:
