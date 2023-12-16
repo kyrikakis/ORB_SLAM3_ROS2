@@ -2,7 +2,6 @@
 
 #include<opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
-#include <boost/asio.hpp>
 
 using std::placeholders::_1;
 
@@ -42,40 +41,57 @@ ImageStreamNode::ImageStreamNode()
 
 void ImageStreamNode::StreamImage() 
 {
-    std::string serverAddress = "192.168.1.17";
-    unsigned short serverPort = 8888;
+    cv::VideoCapture cap;
+    cap.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
-    // Setup boost::asio
-    boost::asio::io_service ioService;
-    boost::asio::ip::tcp::socket socket(ioService);
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(serverAddress), serverPort);
+    cap.open("tcp://192.168.1.17:8888");
+
+    std::cout << "buffer size: " << cap.get(cv::CAP_PROP_BUFFERSIZE) << std::endl;
+
+    // Check if the video capture object is successfully opened
+    // if (!cap.isOpened()) {
+    //     std::cerr << "Error opening video stream from TCP source" << std::endl;
+    //     return;
+    // } else {
+    //     std::cout << "video capture suceeded!" << std::endl;
+    // }
+
+    cv::Mat frame;
+    cap >> frame;
+    std::cout << "frame received size: " << frame.size() << std::endl;
+
+    //cv::namedWindow("Video Stream", cv::WINDOW_NORMAL);
+
+    // std::ifstream inputStream("tcp://192.168.1.210:8888", std::ios::binary);
+
+    // if (!inputStream.is_open()) {
+    //     std::cerr << "Error opening video stream." << std::endl;
+    //     return -1;
+    // }
 
     try {
-        socket.connect(endpoint);
         while (true) {
+// Read a frame from the video source
+            cap >> frame;
+
+            // Check if the frame is empty (end of video stream)
+            if (frame.empty()) {
+                std::cout << "End of video stream" << std::endl;
+                break;
+            } else {
+                std::cout << "frame rate: " << cap.get(cv::CAP_PROP_FPS) << std::endl;
+            }
+            
             // // send image data
             std_msgs::msg::Header header;
             header.frame_id = "camera";
             header.stamp = this->get_clock()->now();
 
-            // Read the length of the next frame (assuming it's a 4-byte integer)
-            uint32_t lenFrame;
-            boost::asio::read(socket, boost::asio::buffer(&lenFrame, sizeof(lenFrame)));
-            // Read the frame data
-            std::vector<char> frameData(lenFrame);
-            boost::asio::read(socket, boost::asio::buffer(frameData.data(), lenFrame));
-
-            // Decode the frame using OpenCV
-            cv::Mat frame = cv::imdecode(cv::Mat(frameData), cv::IMREAD_COLOR);
-
-            if (frame.empty()) {
-                std::cerr << "Error decoding frame." << std::endl;
-                continue;
-            }
+            
 
             cv_bridge::CvImage img_bridge;
 
-            img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, frame);
+            img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, frame);
             ImageMsg::SharedPtr msg_img = img_bridge.toImageMsg();
             pub_image->publish(*msg_img); 
 
